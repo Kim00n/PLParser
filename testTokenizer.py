@@ -3,7 +3,7 @@ from src.tokenTemplate import TokenTemplate
 
 tokenizer = Tokenizer()
 tokenizer.load_config('./syntaxConfig.json')
-tokenizer.tokenize(open('../Parser/pkg_ctx.pkb').read())
+tokenizer.tokenize(open('../Parser/test.pkb').read())
 #with open('./token_result.json', 'w') as out_file:
 #    out_file.write(tokenizer.get_json_nodes() + '\n')
 first_token = tokenizer.tokens[0]
