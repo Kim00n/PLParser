@@ -1,0 +1,45 @@
+{
+  "tokens":[
+    {
+      "name": "num",
+      "pattern": "([0-9]+[\\.]?[0-9]*)"
+    },{
+      "name": "op",
+      "pattern":"([:=!+><]{1,2}|[\\-](?!\\-))"
+    },{
+      "name": "sep",
+      "pattern":"(?:([\\()\\,])|([\\|]{2}))"
+    },{
+      "name": "word",
+      "pattern": "(([\\.]?[a-zA-Z\\*][a-zA-Z0-9_#\\*\\%]*[\\.]?)*(\\\"[^\\\"]*\\\")?)"
+    },{
+      "name": "blk",
+      "pattern":"([ \\n\\t\\f\\r]+)"
+    },{
+      "name":"strDef",
+      "pattern":"(\\\"[^\\\"]*\\\")"
+    },{
+      "name":"str",
+      "pattern":"((?<!['])['])(([^'])|(''))*(['](?!'))"
+    },{
+      "name":"comment",
+      "pattern":"((--[^\\n]+)|(\\\/\\*((.|\\n)(?!\\*\\\/))*(.|\\n)(\\*\\\/)))"
+    },{
+      "name":"EOStatement",
+      "pattern":"([;\\\/])"
+    },{
+      "name":"NoMatch",
+      "pattern":"([^ ]*)"
+    }
+  ],
+  "syntax":[
+    {
+      "name": "package_declaration",
+      "pattern": "{,create}{,or}{,replace}{,body}(<package_name>{id,}){is}",
+      "ignore":"{blk}"
+    },{
+      "name": "type_declaration",
+      "pattern": "{type}(<=type_name>{id}){,is}(<type_specification>{id,!';'}*){,';'}"
+    }
+  ]
+}
