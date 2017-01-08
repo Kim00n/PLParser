@@ -1,34 +1,34 @@
 {
   "tokens":[
     {
-      "name": "num",
+      "type": "num",
       "pattern": "([0-9]+[\\.]?[0-9]*)"
     },{
-      "name": "op",
+      "type": "op",
       "pattern":"([:=!+><]{1,2}|[\\-](?!\\-))"
     },{
-      "name": "sep",
+      "type": "sep",
       "pattern":"(?:([\\()\\,])|([\\|]{2}))"
     },{
-      "name": "word",
+      "type": "word",
       "pattern": "(([\\.]?[a-zA-Z\\*][a-zA-Z0-9_#\\*\\%]*[\\.]?)*(\\\"[^\\\"]*\\\")?)"
     },{
-      "name": "blk",
+      "type": "blk",
       "pattern":"([ \\n\\t\\f\\r]+)"
     },{
-      "name":"strDef",
+      "type":"strDef",
       "pattern":"(\\\"[^\\\"]*\\\")"
     },{
-      "name":"str",
+      "type":"str",
       "pattern":"((?<!['])['])(([^'])|(''))*(['](?!'))"
     },{
-      "name":"comment",
+      "type":"comment",
       "pattern":"((--[^\\n]+)|(\\\/\\*((.|\\n)(?!\\*\\\/))*(.|\\n)(\\*\\\/)))"
     },{
-      "name":"EOStatement",
+      "type":"EOStatement",
       "pattern":"([;\\\/])"
     },{
-      "name":"NoMatch",
+      "type":"NoMatch",
       "pattern":"([^ ]*)"
     }
   ],

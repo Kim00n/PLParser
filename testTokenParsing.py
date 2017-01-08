@@ -1,6 +1,6 @@
 import re
 
-from src.fileHandling import TextFile
+from src.archive.fileHandling import TextFile
 
 ReWord = re.compile(r'([a-zA-Z0-9_#\*]*)')
 #             word : ([a-zA-Z0-9_#\*]*)

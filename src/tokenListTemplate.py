@@ -87,4 +87,12 @@ class TokenListTemplate():
                 break;
 
     def get_json_nodes(self):
-        json_nodes = []
+        json_node = {}
+        json_node['group_name'] = self.list_name
+        json_node['group_tokens'] = []
+        for token in self.tokens:
+            if type(token) is TokenTemplate:
+                json_node['group_tokens'].append(token.get_json_node())
+            elif type(token) is TokenListTemplate:
+                json_node['group_tokens'].append(token.get_json_nodes())
+        return json_node

@@ -1,6 +1,6 @@
 import json
 import re
-
+from token import Token
 
 class Parser():
     def __init__(self):
@@ -41,12 +41,8 @@ class Parser():
                 break
             else:
                 token_value = token_match.group(0)
-                node = {}
-                node['token'] = token_found
-                node['value'] = token_value
-                node['start_position'] = startPos
-                node['length'] = token_value.__len__()
-                source_json['lexic'].append(node)
+                token = Token(token_found, token_value, startPos)
+                source_json['lexic'].append(token.get_json_node())
                 print(i,':',startPos,':',token_value.__len__(),':"',token_found,'":',token_value)
                 startPos += token_value.__len__()
 
@@ -56,6 +52,6 @@ class Parser():
 
 parser = Parser()
 parser.load_config('./syntaxConfig.json')
-json_result = parser.tokenizer(open('./pkg_ctx.pkb').read())
+json_result = parser.tokenizer(open('../../Parser/pkg_ctx.pkb').read())
 with open('./token_result.json', 'w') as out_file:
     out_file.write(json_result + '\n')

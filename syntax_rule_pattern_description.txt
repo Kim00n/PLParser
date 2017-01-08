@@ -1,0 +1,18 @@
+Find below the elements that can compose a rule of syntax:
+
+{ }             token element
+{content,type}  token element (token_type must ='type' and token_value ='content')
+{'my val'}      token element (token='my val', type not specified for match)
+{!'my val'}     token element (token!='my id', type not specified for match)
+{>'my val'}     token element (token_value > 'my val', type not specified for match)
+{,'my type'}    token element (token_value not specified, token_type = 'my type')
+
+{ }*            conditional elements (0,n)
+{ }+            conditional elements (1,n)
+{ }?            conditional elements (0,1)
+{ }[2]          conditional elements 2
+{ }[2,5]        conditional elements 2 to 5
+
+({ }+{ }[2])    describe a list of tokens
+(<name>{ }*)    make a list of elements and give them a name
+(<name>)        use of a pre_existing list of elements

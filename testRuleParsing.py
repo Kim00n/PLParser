@@ -81,7 +81,7 @@ def process_rule(list_tokens, ignore=None):
 #process_rule("{create}{or}{replace}{body}(<package_name>{,word}){is}",ignore="{blk}")
 #process_rule("{type,word}*{a}(<type_name>{,word}*){is}[1,3](<type_definition>{!';'}*){';'}",ignore="{blk}")
 tokens = TokenListTemplate()
-tokens.init_pattern("{create}{or}{replace}{body}(<package_name>{,word}){is}")
-print (tokens.tokens)
+tokens.init_pattern("{type,word}*{a}(<type_name>{,word}*){is}[1,3](<type_definition>{!';'}*){';'}")
+print (tokens.get_json_nodes())
 
 

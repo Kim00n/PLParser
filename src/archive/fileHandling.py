@@ -23,4 +23,4 @@ class TextFile:
         # return result
         return file_content
 
-from src.fileHandling import TextFile
+from src.archive.fileHandling import TextFile
