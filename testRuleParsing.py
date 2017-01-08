@@ -1,7 +1,7 @@
-import json
 import re
-from syntaxTemplate import SyntaxTemplate
-from syntaxTemplate import TokenListTemplate
+
+from src.tokenListTemplate import TokenListTemplate
+
 
 class syntaxtoken_rules():
     def __init__(self):

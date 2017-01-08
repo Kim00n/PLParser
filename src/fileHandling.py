@@ -1,6 +1,4 @@
 import os
-import sys
-import re
 
 
 class TextFile:
@@ -25,4 +23,4 @@ class TextFile:
         # return result
         return file_content
 
-from fileHandling import TextFile
+from src.fileHandling import TextFile
