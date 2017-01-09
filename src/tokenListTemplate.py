@@ -5,8 +5,8 @@ from src.tokenTemplate import TokenTemplate
 
 class TokenListTemplate():
     def __init__(self):
-        self.list_name = ''
-        self.tokens = []
+        self.__list_name__ = ''
+        self.__token_templates__ = []
         # init regex syntax elements
         self.re_syntax_el = dict(
             token_group = re.compile(r"([\(][^\)]+[\)])"),
@@ -16,18 +16,27 @@ class TokenListTemplate():
             token_occ = re.compile(r"(([\*\+\?])|([\[][^\]]+[\]]))")
         )
 
-    def set_list_name (self, list_name):
-        self.list_name = list_name
+    @property
+    def list_name(self):
+        return self.__list_name__
+
+    @list_name.setter
+    def set_list_name(self, list_name):
+        self.__list_name__ = list_name
+
+    @property
+    def token_templates(self):
+        return self.__token_templates__
 
     def append (self, name, value, occurrences = ''):
         token = TokenTemplate()
         token.set_token_name(name)
         token.set_token_value(value)
         token.set_occurrences(occurrences)
-        self.tokens.append(token)
+        self.__token_templates__.append(token)
 
     def init_pattern (self, pattern, __original_str__=None, __original_pos__=None):
-        self.tokens = []
+        self.__token_templates__ = []
         pos = 0
         while len(pattern) > pos:
             # Search for token
@@ -61,7 +70,7 @@ class TokenListTemplate():
                     pos += len(token_template.__occurrences__)
 
                 #print ('token:',node)
-                self.tokens.append(token_template)
+                self.__token_templates__.append(token_template)
 
             # Search for group
             tok_group = self.re_syntax_el['token_group'].match(pattern, pos)
@@ -78,7 +87,7 @@ class TokenListTemplate():
                 sublist_token_template.init_pattern(tok_group.group(0)[grp_pos:-1],__original_str__ or pattern,__original_pos__ or (pos+grp_pos))
                 pos += len(tok_group.group(0))
 
-                self.tokens.append(sublist_token_template)
+                self.__token_templates__.append(sublist_token_template)
 
             if token is None and tok_group is None:
                 print ('> Error: expected { or ( on the position')
@@ -88,7 +97,7 @@ class TokenListTemplate():
 
     def get_json_nodes(self):
         json_node = {}
-        json_node['group_name'] = self.list_name
+        json_node['group_name'] = self.__list_name__
         json_node['group_tokens'] = []
         for token in self.tokens:
             if type(token) is TokenTemplate:
@@ -96,3 +105,33 @@ class TokenListTemplate():
             elif type(token) is TokenListTemplate:
                 json_node['group_tokens'].append(token.get_json_nodes())
         return json_node
+
+    def match(self, tokens, start_pos=0):
+        token_index = start_pos
+        token_occ = 0
+        tpl_index = 0
+        while True:
+            tok_tpl = self.token_templates[tpl_index]
+            token = tokens[token_index]
+            if token is TokenTemplate:
+                if token_occ < tok_tpl.min_occurrences and not tok_tpl.is_token_match(token):
+                    return False
+
+            if tokens is TokenListTemplate:
+                break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

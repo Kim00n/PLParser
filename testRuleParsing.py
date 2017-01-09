@@ -73,6 +73,7 @@ class syntaxtoken_rules():
 
         return (node_list)
 
+
 def process_rule(list_tokens, ignore=None):
     process = token_rules()
     el = process.get_nodes(list_tokens)
