@@ -21,7 +21,7 @@ class TokenListTemplate():
         return self.__list_name__
 
     @list_name.setter
-    def set_list_name(self, list_name):
+    def list_name(self, list_name):
         self.__list_name__ = list_name
 
     @property
@@ -30,9 +30,9 @@ class TokenListTemplate():
 
     def append (self, name, value, occurrences = ''):
         token = TokenTemplate()
-        token.set_token_name(name)
-        token.set_token_value(value)
-        token.set_occurrences(occurrences)
+        token.token_name = name
+        token.token_value = value
+        token.token_occurrences = occurrences
         self.__token_templates__.append(token)
 
     def init_pattern (self, pattern, __original_str__=None, __original_pos__=None):
@@ -48,16 +48,16 @@ class TokenListTemplate():
                 tok_element = self.re_syntax_el['simple_token'].match(pattern, pos)
                 if tok_element is not None and tok_element.group() != '':
                     # save value if is is
-                    token_template.set_token_value(tok_element.group(0) if tok_element.group(0)[0]!=',' else '')
+                    token_template.token_value = tok_element.group(0) if tok_element.group(0)[0]!=',' else ''
                     # token type otherwise
-                    token_template.set_token_type(tok_element.group(0)[1:] if tok_element.group(0)[0]==',' else '')
+                    token_template.token_type = tok_element.group(0)[1:] if tok_element.group(0)[0]==',' else ''
 
                     pos += len(tok_element.group(0))
                     # search for token type if not yet found
                     if token_template.__token_type__ == '':
                         tok_element = self.re_syntax_el['simple_token'].match(pattern, pos)
                         if tok_element is not None and tok_element.group() != '':
-                            token_template.set_token_type(tok_element.group(0)[1:] if tok_element.group(0)[0] == ',' else '')
+                            token_template.token_type = tok_element.group(0)[1:] if tok_element.group(0)[0] == ',' else ''
                             pos += len(token_template.__token_type__)+1
 
                 # Add closing bracket
@@ -66,7 +66,7 @@ class TokenListTemplate():
                 # Handle occurrences founds
                 count_element = self.re_syntax_el['token_occ'].match(pattern, pos)
                 if count_element is not None and count_element.group() != '':
-                    token_template.set_occurrences(count_element.group(0))
+                    token_template.token_occurrences = count_element.group(0)
                     pos += len(token_template.__occurrences__)
 
                 #print ('token:',node)
@@ -80,7 +80,7 @@ class TokenListTemplate():
                 # identify group name
                 grp_name = self.re_syntax_el['token_grp_name'].match(tok_group.group(0), grp_pos)
                 if grp_name is not None and grp_name.group() != '':
-                    sublist_token_template.set_list_name(grp_name.group(0)[1:-1])
+                    sublist_token_template.list_name = grp_name.group(0)[1:-1]
                     grp_pos += len(grp_name.group(0))
 
                 # process pattern in the group
@@ -99,7 +99,7 @@ class TokenListTemplate():
         json_node = {}
         json_node['group_name'] = self.__list_name__
         json_node['group_tokens'] = []
-        for token in self.tokens:
+        for token in self.token_templates:
             if type(token) is TokenTemplate:
                 json_node['group_tokens'].append(token.get_json_node())
             elif type(token) is TokenListTemplate:
