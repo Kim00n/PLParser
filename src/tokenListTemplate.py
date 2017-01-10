@@ -7,6 +7,7 @@ class TokenListTemplate():
     def __init__(self):
         self.__list_name__ = ''
         self.__token_templates__ = []
+        self.__ignore__ = None
         # init regex syntax elements
         self.re_syntax_el = dict(
             token_group = re.compile(r"([\(][^\)]+[\)])"),
@@ -35,65 +36,60 @@ class TokenListTemplate():
         token.token_occurrences = occurrences
         self.__token_templates__.append(token)
 
-    def init_pattern (self, pattern, __original_str__=None, __original_pos__=None):
-        self.__token_templates__ = []
+    def __parse_pattern__(self, pattern, __original_str__=None , __original_pos__=None):
+        token_tpl_list = []
         pos = 0
+
         while len(pattern) > pos:
             # Search for token
             token = self.re_syntax_el['full_token'].match(pattern, pos)
             if token is not None and token.group() != '':
-                token_template = TokenTemplate()
-                pos += 1
-                # Handle first element found
-                tok_element = self.re_syntax_el['simple_token'].match(pattern, pos)
-                if tok_element is not None and tok_element.group() != '':
-                    # save value if is is
-                    token_template.token_value = tok_element.group(0) if tok_element.group(0)[0]!=',' else ''
-                    # token type otherwise
-                    token_template.token_type = tok_element.group(0)[1:] if tok_element.group(0)[0]==',' else ''
-
-                    pos += len(tok_element.group(0))
-                    # search for token type if not yet found
-                    if token_template.__token_type__ == '':
-                        tok_element = self.re_syntax_el['simple_token'].match(pattern, pos)
-                        if tok_element is not None and tok_element.group() != '':
-                            token_template.token_type = tok_element.group(0)[1:] if tok_element.group(0)[0] == ',' else ''
-                            pos += len(token_template.__token_type__)+1
-
-                # Add closing bracket
-                pos += 1
-
-                # Handle occurrences founds
-                count_element = self.re_syntax_el['token_occ'].match(pattern, pos)
-                if count_element is not None and count_element.group() != '':
-                    token_template.token_occurrences = count_element.group(0)
-                    pos += len(token_template.__occurrences__)
+                new_token_tpl = TokenTemplate.init_from_pattern(token.group(0))
+                pos += len(token.group(0))
+                if new_token_tpl is None:
+                    print ("issue processing the template ",token.group(0),". EXIT")
+                    break
 
                 #print ('token:',node)
-                self.__token_templates__.append(token_template)
+                token_tpl_list.append(new_token_tpl)
 
             # Search for group
             tok_group = self.re_syntax_el['token_group'].match(pattern, pos)
             if (token is None and tok_group is not None and tok_group.group() != ''):
-                sublist_token_template = TokenListTemplate()
+                new_token_tpl_list = TokenListTemplate()
+                # Inherit the ignore
+                new_token_tpl_list.__ignore__ = self.__ignore__
+
                 grp_pos  = 1
-                # identify group name
+
+                # identify group name and set it
                 grp_name = self.re_syntax_el['token_grp_name'].match(tok_group.group(0), grp_pos)
                 if grp_name is not None and grp_name.group() != '':
-                    sublist_token_template.list_name = grp_name.group(0)[1:-1]
+                    new_token_tpl_list.list_name = grp_name.group(0)[1:-1]
                     grp_pos += len(grp_name.group(0))
 
                 # process pattern in the group
-                sublist_token_template.init_pattern(tok_group.group(0)[grp_pos:-1],__original_str__ or pattern,__original_pos__ or (pos+grp_pos))
+                new_token_tpl_list.__parse_pattern__(
+                    tok_group.group(0)[grp_pos:-1], __original_str__ or pattern,__original_pos__ or (pos+grp_pos))
                 pos += len(tok_group.group(0))
 
-                self.__token_templates__.append(sublist_token_template)
+                token_tpl_list.append(new_token_tpl_list)
 
             if token is None and tok_group is None:
                 print ('> Error: expected { or ( on the position')
                 print ('> On: ', (__original_str__ or pattern))
                 print (' '.rjust((__original_pos__ or pos)+(pos is __original_pos__ is None)+6, ' '),'^')
-                break;
+                break
+
+        self.__token_templates__ = token_tpl_list
+        return token_tpl_list
+
+
+    def init_pattern (self, pattern, ignore=None):
+        if ignore is not None:
+            self.__ignore__ = TokenTemplate.init_from_pattern(ignore)
+
+        self.__token_templates__ = self.__parse_pattern__(pattern)
 
     def get_json_nodes(self):
         json_node = {}
@@ -108,17 +104,73 @@ class TokenListTemplate():
 
     def match(self, tokens, start_pos=0):
         token_index = start_pos
-        token_occ = 0
+        tpl_match_occ = 0
         tpl_index = 0
         while True:
             tok_tpl = self.token_templates[tpl_index]
             token = tokens[token_index]
-            if token is TokenTemplate:
-                if token_occ < tok_tpl.min_occurrences and not tok_tpl.is_token_match(token):
-                    return False
+            # Skip the ignored token
+            while self.__ignore__ is not None and \
+                    isinstance(tok_tpl,TokenTemplate) and \
+                    self.__ignore__.is_token_match(token) and \
+                    token_index < len(tokens):
+                print("ignored token ", token_index)
+                token_index += 1
+                token = tokens[token_index]
 
-            if tokens is TokenListTemplate:
-                break;
+            if isinstance(tok_tpl,TokenTemplate):
+                print ("--tok_tpl ",tpl_index," is a token template")
+
+                if tok_tpl.is_token_match(token):
+                    token_index += 1
+                    tpl_match_occ += 1
+                    print(">token ", token_index, " MATCH token tpl ", tpl_index, ", occurrence(s): ", tpl_match_occ)
+                    if tok_tpl.max_occurrences != 0 and tpl_match_occ >= tok_tpl.max_occurrences:
+                        print("--MAX occurrences reached: ",
+                              tpl_match_occ, " out of ", tok_tpl.max_occurrences, ". Go next token tpl.")
+                        tpl_index += 1
+                        tpl_match_occ = 0
+                else:
+                    if tpl_match_occ < tok_tpl.min_occurrences:
+                        print(">token ", token_index, " NOT match token tpl ", tpl_index,", MIN occurrences not reached: ", tpl_match_occ," out of ",tok_tpl.min_occurrences,". EXIT")
+                        print (token.get_json_node())
+                        return None
+                    elif tpl_match_occ >= tok_tpl.min_occurrences:
+                        print(">token ", token_index, " NOT match token tpl ", tpl_index,", MIN occurrences reached: ", tpl_match_occ," out of ",tok_tpl.min_occurrences,". Next Tpl")
+                        tpl_index += 1
+                        tpl_match_occ = 0
+
+            if isinstance(tok_tpl,TokenListTemplate):
+                print ("--tok_tpl is a token list template")
+                list_match = tok_tpl.match(tokens,token_index)
+                if list_match is None:
+                    print(">List token from ", token_index, " NOT MATCH token tpl LIST. Exit")
+                    return None
+                else:
+                    print(">List token from ", token_index, " for ",len(list_match)," tokens MATCH token tpl LIST. Next Tpl")
+                    token_index += len(list_match)
+                    tpl_match_occ += 0
+                    tpl_index += 1
+                    for i in list_match:
+                        print(i.get_json_node())
+
+            if tpl_index >= len(self.token_templates):
+                print ("FULL MATCH")
+                return tokens[start_pos:token_index]
+
+            if  token_index > len(tokens):
+                print ("--Out of index, no match")
+                return None
+
+
+            #print ("tpl_index: ",tpl_index)
+            #print ("tpl_match_occ: ",tpl_match_occ)
+            #print ("tok_tpl.get_json_node: ",tok_tpl.get_json_node())
+            #print ("min_occurrences: ",tok_tpl.min_occurrences)
+            #print ("max_occurrences: ",tok_tpl.max_occurrences)
+            #print ("token.get_json_node: ",token.get_json_node())
+
+            #break
 
 
 

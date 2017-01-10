@@ -27,11 +27,11 @@ class TokenTemplate():
 
     @property
     def min_occurrences(self):
-        return self.__min_occurrences__
+        return int(self.__min_occurrences__)
 
     @property
     def max_occurrences(self):
-        return self.__max_occurrences__
+        return int(self.__max_occurrences__)
 
     @token_type.setter
     def token_type (self, token_type):
@@ -52,19 +52,22 @@ class TokenTemplate():
     @token_occurrences.setter
     def token_occurrences (self, token_occurrences):
         self.__occurrences__ = token_occurrences
-        if token_occurrences == '*':
+        if token_occurrences == '':
+            self.__min_occurrences__ = 1
+            self.__max_occurrences__ = 1
+        elif token_occurrences == '*':
             self.__min_occurrences__ = 0
-            self.__max_occurrences__ = ''
+            self.__max_occurrences__ = 0
         elif token_occurrences == '+':
             self.__min_occurrences__ = 1
-            self.__max_occurrences__ = ''
+            self.__max_occurrences__ = 0
         elif token_occurrences == '?':
             self.__min_occurrences__ = 0
             self.__max_occurrences__ = 1
         elif token_occurrences[0] == '[' and token_occurrences[-1] == ']':
-            self.__min_occurrences__ = re.match('[0-9]*', token_occurrences[1:]).group(0) or ''
+            self.__min_occurrences__ = re.match('[0-9]*', token_occurrences[1:]).group(0)
             if token_occurrences[1+len(self.__min_occurrences__)] == ',':
-                self.__max_occurrences__ = re.match('[0-9]*', token_occurrences[2+len(self.__min_occurrences__):])
+                self.__max_occurrences__ = re.match('[0-9]*', token_occurrences[2+len(self.__min_occurrences__):]).group(0)
             else:
                 self.__max_occurrences__ = self.__min_occurrences__
         else:
@@ -104,6 +107,8 @@ class TokenTemplate():
             if occ_element is not None and occ_element.group() != '':
                 token_template.token_occurrences = occ_element.group(0)
                 pos += len(token_template.__occurrences__)
+            else:
+                token_template.token_occurrences = ''
 
         return token_template
 
@@ -124,7 +129,6 @@ class TokenTemplate():
         else:
             matching_value = matching_element
             ignore_case = True
-        print (ignore_case.numerator)
 
         if value_modifier is None or '' == value_modifier or '=' == value_modifier:
             if ignore_case:
