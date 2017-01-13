@@ -15,7 +15,7 @@ Find below the definition of the concept used and the class who supported these 
     Description:
         This object will store a token as identified from the source
 
-[SingleToken Rule]
+[Syntax Token Rule]
     Description:
         This object will take care of handling one token rule.
         The token rule is composed like <value>.<id><occ>
@@ -30,7 +30,7 @@ Find below the definition of the concept used and the class who supported these 
             !';'.id+    :will match one or more successive token of type 'id' that are not ';'
             .!id*       :will match a succession of token that are not from type 'id', can not be found due to * (=0..n)
 
-[GroupOfTokens Rule]
+[Syntax Group Rule]
     Description:
         This object will handle take care of a succession of singleToken rules or group of token rules encapsulated by parenthesis
         Example of GroupOfTokens Rule:

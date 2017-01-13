@@ -1,5 +1,5 @@
 {
-  "tokens":[
+  "typeOfTokens":[
     {
       "type": "num",
       "pattern": "([0-9]+[\\.]?[0-9]*)"
@@ -10,7 +10,7 @@
       "type": "sep",
       "pattern":"(?:([\\()\\,])|([\\|]{2}))"
     },{
-      "type": "word",
+      "type": "id",
       "pattern": "(([\\.]?[a-zA-Z\\*][a-zA-Z0-9_#\\*\\%]*[\\.]?)*(\\\"[^\\\"]*\\\")?)"
     },{
       "type": "blk",
@@ -32,14 +32,19 @@
       "pattern":"([^ ]*)"
     }
   ],
-  "syntax":[
+  "syntaxRules":[
     {
       "name": "package_declaration",
-      "pattern": "{,create}{,or}{,replace}{,body}(<package_name>{id,}){is}",
-      "ignore":"{blk}"
+      "pattern": "create or replace package body (<package_name> .id) (is|as)",
+      "ignore":".blk"
     },{
       "name": "type_declaration",
-      "pattern": "{type}(<=type_name>{id}){,is}(<type_specification>{id,!';'}*){,';'}"
+      "pattern": "type (<type_name> .id) is (<type_spec> !';'*) ';'",
+      "ignore":".blk"
+    },{
+      "name": "variable_declaration",
+      "pattern": "(<variable_name> .id) (<variable_type> !';'.id)';'",
+      "ignore":".blk"
     }
   ]
 }

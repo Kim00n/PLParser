@@ -2,7 +2,7 @@ import re
 from src.token import Token
 from src.ruleScanner import RuleScanner
 
-class SingleTokenRule():
+class SyntaxTokenRule():
     def __init__(self, token_split_char = None):
         self.__token_type__ = ''
         self.__type_modifier__ = ''
@@ -136,8 +136,8 @@ class SingleTokenRule():
     def is_token_match(self, token):
         value_match = self.__token_value__ is None \
                       or self.__token_value__ == '' \
-                      or SingleTokenRule.__match_element__(token.token_value, self.__token_value__, self.__value_modifier__)
+                      or SyntaxTokenRule.__match_element__(token.token_value, self.__token_value__, self.__value_modifier__)
         type_match = self.__token_type__ is None \
                      or self.__token_type__ == '' \
-                     or SingleTokenRule.__match_element__(token.token_type, self.__token_type__, self.__type_modifier__)
+                     or SyntaxTokenRule.__match_element__(token.token_type, self.__token_type__, self.__type_modifier__)
         return value_match and type_match

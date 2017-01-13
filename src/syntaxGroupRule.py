@@ -1,9 +1,9 @@
 import re
-from src.singleTokenRule import SingleTokenRule
+from src.syntaxTokenRule import SyntaxTokenRule
 from src.ruleScanner import RuleScanner
 
 
-class GroupOfTokensRule():
+class SyntaxGroupRule():
     def __init__(self):
         self.__list_name__ = ''
         self.__token_templates__ = []
@@ -35,7 +35,7 @@ class GroupOfTokensRule():
         pos = 0
         token = self.ruleScanner.match_token(pattern, pos)
         if token is not None:
-            token_rule = SingleTokenRule(self.ruleScanner.token_split_char)
+            token_rule = SyntaxTokenRule(self.ruleScanner.token_split_char)
             if token[0] == self.ruleScanner.token_separator:
                 pos += 1
             # Handle first element found
@@ -90,7 +90,7 @@ class GroupOfTokensRule():
             # Search for group
             tok_group = self.ruleScanner.match_grp(pattern, pos, strip=None)
             if (token is None and tok_group is not None):
-                group_of_tokens_rule = GroupOfTokensRule()
+                group_of_tokens_rule = SyntaxGroupRule()
                 grp_pos = 1
 
                 # identify group name and set it
@@ -119,6 +119,8 @@ class GroupOfTokensRule():
                     pos += 1
                 elif ' ' == token_char:
                     pos += 1
+                else:
+                    token_char = None
             else:
                 token_char = None
 
@@ -148,7 +150,7 @@ class GroupOfTokensRule():
         for token in self.list_of_tokens_rule:
             if isinstance(token, SingleTokenRule):
                 json_node['group_tokens'].append(token.get_json_node())
-            elif isinstance(token, GroupOfTokensRule):
+            elif isinstance(token, SyntaxGroupRule):
                 json_node['group_tokens'].append(token.get_json_nodes())
         return json_node
 
@@ -161,13 +163,13 @@ class GroupOfTokensRule():
             token = tokens[token_index]
             # Skip the ignored token
             while self.__ignore__ is not None and \
-                    isinstance(tok_tpl,SingleTokenRule) and \
+                    isinstance(tok_tpl,SyntaxTokenRule) and \
                     self.__ignore__.is_token_match(token) and \
                     token_index < len(tokens):
                 token_index += 1
                 token = tokens[token_index]
 
-            if isinstance(tok_tpl,SingleTokenRule):
+            if isinstance(tok_tpl,SyntaxTokenRule):
                 if tok_tpl.is_token_match(token):
                     token_index += 1
                     tpl_match_occ += 1
@@ -181,7 +183,7 @@ class GroupOfTokensRule():
                         tpl_index += 1
                         tpl_match_occ = 0
 
-            if isinstance(tok_tpl, GroupOfTokensRule):
+            if isinstance(tok_tpl, SyntaxGroupRule):
                 list_match = tok_tpl.match(tokens,token_index)
                 if list_match is None:
                     return None
