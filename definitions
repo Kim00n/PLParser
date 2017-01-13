@@ -1,0 +1,58 @@
+Find below the definition of the concept used and the class who supported these concepts:
+
+[Token Type]
+    Description:
+        This object describe a type of token.
+    Class: tokenType
+    Attributes:
+        * Token Type
+        * Pattern
+    Methods:
+        *
+    The rules defining the types are specified in the file syntaxConfig.json
+
+[Token]
+    Description:
+        This object will store a token as identified from the source
+
+[SingleToken Rule]
+    Description:
+        This object will take care of handling one token rule.
+        The token rule is composed like <value>.<id><occ>
+        - <value> is mandatory. it is the expected value to match. if it need a space, the value can be within quotes.
+        - .<id> is optional. like value it's a word that can be within quotes
+        - <occ> define the expected occurrences. It can be like in regex ? * + or [min,max] (where min and max are numbers)
+        NOTE: the <value> and <id> can start by a modifier like ! (for non match), > or <
+        Examples of singleToken rule:
+            test        :will match value 'test' case not sensitive
+            'my test'   :will match value 'my test' case sensitive
+            .id         :will match token of type 'id'
+            !';'.id+    :will match one or more successive token of type 'id' that are not ';'
+            .!id*       :will match a succession of token that are not from type 'id', can not be found due to * (=0..n)
+
+[GroupOfTokens Rule]
+    Description:
+        This object will handle take care of a succession of singleToken rules or group of token rules encapsulated by parenthesis
+        Example of GroupOfTokens Rule:
+            this is a? test             :will match the sentence 'this is a test' or 'this is test'
+            !';' ';'                    :will match any succession of non ';' finished by a ';'
+            this is (<content> a test)  :will match the sentence 'this is a test'. 'a test' can be identified as a subgroup called "content"
+            this is (a|b)               :will match the sentence 'this is a' or 'this is b'
+
+
+[GroupOfTokens]
+    Description:
+    Class:
+    Attributes:
+        *
+    Methods:
+        *
+
+[Tokenizer]
+    Description:
+        Engine in charge of analysing a source file in order to extract out of it one single list of tokens.
+
+[Parser]
+    Description:
+        Engine in charge of loading the rules and create a list of groupOfTokensRule out of it.
+        A source file can be analyze to extract a matching from the rules.
