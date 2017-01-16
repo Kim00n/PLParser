@@ -35,15 +35,19 @@
   "syntaxRules":[
     {
       "name": "package_declaration",
-      "pattern": "create or replace package body (<package_name> .id) (is|as)",
+      "pattern": "create or replace package body (@package_name .id) (is|as)",
       "ignore":".blk"
     },{
       "name": "type_declaration",
-      "pattern": "type (<type_name> .id) is (<type_spec> !';'*) ';'",
+      "pattern": "type (@type_name .id) is (@type_spec !';'*) ';'",
+      "ignore":".blk"
+    },{
+      "name": "cursor_declaration",
+      "pattern": "cursor (@cursor_name .id) '(' !')'* ')' is",
       "ignore":".blk"
     },{
       "name": "variable_declaration",
-      "pattern": "(<variable_name> .id) (<variable_type> !';'.id)';'",
+      "pattern": "(@variable_name .id) (@variable_type !';'.id) ';'",
       "ignore":".blk"
     }
   ]
