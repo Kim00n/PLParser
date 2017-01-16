@@ -87,14 +87,13 @@ class RuleScanner():
             return None
         return el.group(0).strip(' ')
 
-    def str_split_pattern_rule(self, pattern):
+    def str_split_syntax_rule(self, pattern):
         all_token_rules = []
         idx_alt = 0
         current_token_rules = []
         pos = 0
 
         while len(pattern) > pos:
-            print (pos,':',len(pattern))
             # Search for token
             token_el = self.match_token(pattern, pos, strip=None)
             if token_el is not None:
@@ -119,7 +118,7 @@ class RuleScanner():
             token_el = self.match_rule_name(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                current_token_rules.append(('rule_name',token_el))
+                current_token_rules.append(('rule',token_el))
                 continue
 
             token_el = pattern[pos]
@@ -145,7 +144,15 @@ class RuleScanner():
         return all_token_rules
 
     def str_split_token_rule(self, pattern):
-        token_el = ['','','','','1', '1']
+        token_el = {
+            "value_compare": '',
+            "value": '',
+            "type_compare": '',
+            "type": '',
+            "min_occ": '1',
+            "max_occ": '1',
+        }
+
         strip_pattern = pattern.strip(' ')
         pos = 0
         token_right = None
@@ -157,12 +164,12 @@ class RuleScanner():
             pos += len(token_left)
             # 0 = left modifier
             if token_left[0] == '!':
-                token_el[0] = token_left[0]
+                token_el["value_compare"] = token_left[0]
                 token_left = token_left[1:]
 
             # 1 = left value
             if token_left[0] != '.':
-                token_el[1] = token_left
+                token_el["value"] = token_left
             else:
                 # start by . mean right part
                 token_right = token_left
@@ -181,56 +188,60 @@ class RuleScanner():
 
             # 2 = right modifier
             if token_right[0] == '!':
-                token_el[2] = token_right[0]
+                token_el["type_compare"] = token_right[0]
                 token_right = token_right[1:]
 
             # 3 = right value
-            token_el[3] = token_right
+            token_el["type"] = token_right
 
         token_occ = self.match_part_occ(strip_pattern, pos)
         if token_occ is None:
             token_occ = '[1]'
         if token_occ == '*':
-            token_el[4] = 0
-            token_el[5] = -1     # mean not defined
+            token_el["min_occ"] = 0
+            token_el["max_occ"] = -1     # mean not defined
         elif token_occ == '+':
-            token_el[4] = 1
-            token_el[5] = -1     # mean not defined
+            token_el["min_occ"] = 1
+            token_el["max_occ"] = -1     # mean not defined
         elif token_occ == '?':
-            token_el[4] = 0
-            token_el[5] = 1
+            token_el["min_occ"] = 0
+            token_el["max_occ"] = 1
         elif token_occ[0] == '[' and token_occ[-1] == ']':
-            token_el[4:] = token_occ[1:-1].split(',')
-            if 5 not in token_el:
-                token_el.append(token_el[4])
+            split_token = token_occ[1:-1].split(',')
+            token_el["min_occ"] = split_token[0]
+            token_el["max_occ"] = split_token[1] if 1 in split_token else split_token[0]
 
         return token_el
 
     def str_split_rule_name(self,pattern):
-        token_el = ['', '', '']
+        token_el = {
+            "rule":'',
+            "min_occ":'',
+            "max_occ":''
+        }
         strip_pattern = pattern.strip(' ').lstrip('<')
         pos = 0
 
-        rule_name = self.match_id(strip_pattern)
+        rule_name = self.match_id(strip_pattern, pos)
         if rule_name is not None:
-            token_el[0] = rule_name
+            token_el["rule"] = rule_name
             pos += len(rule_name)+1
 
         token_occ = self.match_part_occ(strip_pattern, pos)
         if token_occ is None:
             token_occ = '[1]'
         if token_occ == '*':
-            token_el[1] = 0
-            token_el[2] = -1     # mean not defined
+            token_el["min_occ"] = 0
+            token_el["max_occ"] = -1     # mean not defined
         elif token_occ == '+':
-            token_el[1] = 1
-            token_el[2] = -1     # mean not defined
+            token_el["min_occ"] = 1
+            token_el["max_occ"] = -1     # mean not defined
         elif token_occ == '?':
-            token_el[1] = 0
-            token_el[2] = 1
+            token_el["min_occ"] = 0
+            token_el["max_occ"] = 1
         elif token_occ[0] == '[' and token_occ[-1] == ']':
-            token_el[1:] = token_occ[1:-1].split(',')
-            if 2 not in token_el:
-                token_el.append(token_el[1])
+            split_token = token_occ[1:-1].split(',')
+            token_el["min_occ"] = split_token[0]
+            token_el["max_occ"] = split_token[1] if 1 in split_token else split_token[0]
 
         return token_el
