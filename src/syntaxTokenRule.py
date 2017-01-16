@@ -67,7 +67,7 @@ class SyntaxTokenRule():
         return False
 
     def match_token(self, token):
-        if not isinstance(token,SyntaxTokenRule):
+        if not isinstance(token,Token):
             return False
 
         value_match = self.__token_value__ is None \
