@@ -19,7 +19,7 @@ class RuleScanner():
         else:
             self.re_syntax = dict(
                 def_group = re.compile(r"([ ]*)([\(][^\)]+[\)])([ ]*)"),
-                def_group_id = re.compile(r"(\@[a-zA-Z0-9_]+)([ ]*)"),
+                def_id = re.compile(r"([\@]?[a-zA-Z0-9_]+)([ ]*)"),
                 def_rule_name = re.compile(r"([\<][^>]+[\>])(([\*\+\?])|([\[][^\]]+[\]]))?([ ]*)"),
                 def_token = re.compile(r"([ ]*)(?:[\.]?([\!]?)(([a-zA-Z0-9_]+)|([\'][^']+[\'])))(\1?)(([\*\+\?])|([\[][^\]]+[\]]))?([ ]*)"),
                 def_part_token = re.compile(r"([.]?)([\!]?)(([a-zA-Z0-9_]+)|([\'][^']+[\']))"),
@@ -53,8 +53,8 @@ class RuleScanner():
             return el.group(0)
         return el.group(0).strip(strip)
 
-    def match_grp_id(self, pattern, pos, strip = ' '):
-        el = self.re_syntax['def_group_id'].match(pattern, pos)
+    def match_id(self, pattern, pos, strip = ' '):
+        el = self.re_syntax['def_id'].match(pattern, pos)
         if el is None or el.group == '':
             return None
         if strip == None:
@@ -87,10 +87,10 @@ class RuleScanner():
             return None
         return el.group(0).strip(' ')
 
-    def split_pattern_rules(self, pattern):
-        all_alternatives_token_rules = []
-        index_alternative = 0
-        list_of_token_rules = []
+    def str_split_pattern_rule(self, pattern):
+        all_token_rules = []
+        idx_alt = 0
+        current_token_rules = []
         pos = 0
 
         while len(pattern) > pos:
@@ -99,58 +99,58 @@ class RuleScanner():
             token_el = self.match_token(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                list_of_token_rules.append(('token',token_el))
+                current_token_rules.append(('token',token_el))
                 continue
 
             # Search for group
             token_el = self.match_grp(pattern, pos, strip=None)
-            if (token_el is not None):
+            if token_el is not None:
                 pos += len(token_el)
-                list_of_token_rules.append(('group',token_el))
+                current_token_rules.append(('group',token_el))
                 continue
 
             # Search for group identifier
-            token_el = self.match_grp_id(pattern, pos, strip=None)
-            if (token_el is not None):
+            token_el = self.match_id(pattern, pos, strip=None)
+            if token_el is not None:
                 pos += len(token_el)
-                list_of_token_rules.append(('group_id',token_el))
+                current_token_rules.append(('group_id',token_el))
                 continue
 
             token_el = self.match_rule_name(pattern, pos, strip=None)
-            if (token_el is not None):
+            if token_el is not None:
                 pos += len(token_el)
-                list_of_token_rules.append(('rule_name',token_el))
+                current_token_rules.append(('rule_name',token_el))
                 continue
 
             token_el = pattern[pos]
-            if (token_el == self.alternative_split_char):
+            if token_el == self.alternative_split_char:
                 pos += len(token_el)
-                all_alternatives_token_rules.append([])
-                all_alternatives_token_rules[index_alternative] = list_of_token_rules
-                list_of_token_rules = []
-                index_alternative += 1
+                all_token_rules.append([])
+                all_token_rules[idx_alt] = current_token_rules
+                current_token_rules = []
+                idx_alt += 1
                 continue
             else:
                 token_el = None
 
             if token_el is None:
-                print ('> Error: expected { or ( on the position')
+                print ('> Error: Unable to match element on the position')
                 print ('> On: ', pattern)
                 print (' '.rjust(pos + 6, ' '),'^')
                 break
 
-        all_alternatives_token_rules.append([])
-        all_alternatives_token_rules[index_alternative] = list_of_token_rules
+        all_token_rules.append([])
+        all_token_rules[idx_alt] = current_token_rules
 
-        return all_alternatives_token_rules
+        return all_token_rules
 
-    def split_token_rules(self, pattern):
-        pos = 0
-        strip_pattern = pattern.strip(' ')
+    def str_split_token_rule(self, pattern):
         token_el = ['','','','','1', '1']
+        strip_pattern = pattern.strip(' ')
+        pos = 0
         token_right = None
 
-        #init token left part
+        # init token left part
         token_left = self.match_part_token(strip_pattern, pos)
         if (token_left is not None):
             # process left part
@@ -203,5 +203,34 @@ class RuleScanner():
             token_el[4:] = token_occ[1:-1].split(',')
             if 5 not in token_el:
                 token_el.append(token_el[4])
+
+        return token_el
+
+    def str_split_rule_name(self,pattern):
+        token_el = ['', '', '']
+        strip_pattern = pattern.strip(' ').lstrip('<')
+        pos = 0
+
+        rule_name = self.match_id(strip_pattern)
+        if rule_name is not None:
+            token_el[0] = rule_name
+            pos += len(rule_name)+1
+
+        token_occ = self.match_part_occ(strip_pattern, pos)
+        if token_occ is None:
+            token_occ = '[1]'
+        if token_occ == '*':
+            token_el[1] = 0
+            token_el[2] = -1     # mean not defined
+        elif token_occ == '+':
+            token_el[1] = 1
+            token_el[2] = -1     # mean not defined
+        elif token_occ == '?':
+            token_el[1] = 0
+            token_el[2] = 1
+        elif token_occ[0] == '[' and token_occ[-1] == ']':
+            token_el[1:] = token_occ[1:-1].split(',')
+            if 2 not in token_el:
+                token_el.append(token_el[1])
 
         return token_el

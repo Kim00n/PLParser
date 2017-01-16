@@ -5,69 +5,54 @@ from src.ruleScanner import RuleScanner
 
 class SyntaxGroupRule():
     def __init__(self):
-        self.__list_name__ = ''
+        self.__group_id__ = ''
         self.__token_templates__ = []
         self.__token_templates__.append([])
         self.__ignore__ = None
-        self.__ruleScanner__ = RuleScanner()
 
     @property
-    def list_name(self):
-        return self.__list_name__
+    def group_id(self):
+        return self.__group_id__
 
-    @list_name.setter
-    def list_name(self, list_name):
-        self.__list_name__ = list_name
+    @group_id.setter
+    def group_id(self, group_id):
+        self.__group_id__ = group_id
 
     @property
     def list_of_tokens_rule(self):
         return self.__token_templates__
 
-    @property
-    def ruleScanner(self):
-        return self.__ruleScanner__
-
-    def init_SingleTokenRule (self, pattern):
-#        full_token = re.compile(r"([\{][^\}]+[\}](([\*\+\?])|([\[][^\]]+[\]]))?)")
-#        simple_token = re.compile(r"([,]?)([!\<\>\=]?)(([a-zA-Z0-9]+)|([\'][^']+[\']))")
-#        token_occ = re.compile(r"(([\*\+\?])|([\[][^\]]+[\]]))")
-        token_rule = None
-        pos = 0
-        token = self.ruleScanner.match_token(pattern, pos)
-        if token is not None:
-            token_rule = SyntaxTokenRule(self.ruleScanner.token_split_char)
-            if token[0] == self.ruleScanner.token_separator:
-                pos += 1
-            # Handle first element found
-            token_part = self.ruleScanner.match_token_part(pattern, pos)
-            if token_part is not None:
-                # save value if it is set
-                token_rule.token_value = token_part if token_part[0] != self.ruleScanner.token_split_char else ''
-                # token type otherwise
-                if token_rule.token_value == '':
-                    token_rule.token_type = token_part
-
-                pos += len(token_part)
-                # search for token type if not yet found
-                if token_rule.token_type == '':
-                    token_part = self.ruleScanner.match_token_part(pattern, pos)
-                    if token_part is not None:
-                        token_rule.token_type = token_part
-                        pos += len(token_part)
-
-            # Add closing bracket
-            if token[0] == self.ruleScanner.token_separator:
-                pos += 1
-
-            # Handle occurrences founds
-            occ_element = self.ruleScanner.match_occ(pattern, pos)
-            if occ_element is not None:
-                token_rule.token_occurrences = occ_element
-                pos += len(token_rule.__occurrences__)
-            else:
-                token_rule.token_occurrences = ''
+    def init_token_rule (self, pattern):
+        token_rule = SyntaxTokenRule()
+        token_rule.init_from_pattern(pattern)
 
         return token_rule
+
+    def init_from_pattern(self, pattern):
+        all_rules = RuleScanner().split_pattern_rules(pattern)
+
+        all_token_rules = []
+        current_alt_rule = []
+        for idx_alt in all_rules:
+            for idx_token in all_rules[idx_alt]:
+                token_rule_type = all_rules[idx_alt][idx_token][0]
+                token_rule_pattern = all_rules[idx_alt][idx_token][1]
+
+                if token_rule_type == 'token':
+                    token_rule = SyntaxTokenRule()
+                    token_rule.init_from_pattern(token_rule_pattern)
+                    current_alt_rule.append(token_rule)
+                elif token_rule_type == 'group':
+                    token_grp = SyntaxGroupRule()
+                    token_grp.init_from_pattern(token_rule_pattern)
+                    current_alt_rule.append(token_grp)
+                elif token_rule_type == 'group_id':
+                    self.group_id = token_rule_pattern
+                elif token_rule_type == 'rule_name':
+                    self.group_id = token_rule_pattern
+
+            all_alternatives_token_rules.append([])
+            all_alternatives_token_rules[index_alternative] = list_of_token_rules
 
     def __parse_pattern__(self, pattern, __original_str__=None , __original_pos__=None):
         all_alternatives_token_rules = []
@@ -79,7 +64,7 @@ class SyntaxGroupRule():
             # Search for token
             token = self.ruleScanner.match_token(pattern, pos, strip=None)
             if token is not None:
-                single_token_rule = self.init_SingleTokenRule(token)
+                single_token_rule = self.init_token_rule(token)
                 pos += len(token)
                 if single_token_rule is None:
                     break
