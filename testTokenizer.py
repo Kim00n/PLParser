@@ -7,7 +7,7 @@ tokenizer.scan_source(open('../Parser/test.pkb').read())
 
 parser = Parser()
 parser.load_config('./syntaxConfig.json')
-parser.scan_tokens(tokenizer.tokens)
+parser.scan_tokens(tokenizer.tokens[0:100])
 #print(parser.syntax_rules["package_declaration"].match(tokenizer.tokens))
 
 #rule = SyntaxGroupRule()

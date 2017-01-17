@@ -74,12 +74,14 @@ class SyntaxRules():
         token_rule["def"] = all_token_rules
         return token_rule
 
-    def add_rule_from_pattern (self, name, pattern, ignore=None):
+    def add_rule_from_pattern (self, name, pattern, ignore=None, root_check=0):
         # parse pattern
         syntax_token = self.pattern_rule_to_tokens(pattern)
         # parse ignore pattern
         if ignore is not None:
             syntax_token["ignore"] = self.pattern_rule_to_tokens(ignore)["def"]
+
+        syntax_token["root_check"] = int(root_check)
 
         # Add the rule to all_rules based on the name given
         self.__all_rules__[name]=syntax_token
@@ -131,7 +133,7 @@ class SyntaxRules():
             # Check if the current token match ignore, and then skip it
             while ignore_syntax is not None and \
                     self.rule_match(ignore_syntax,[src_token]) is not None and \
-                    src_token_idx < len(tokens):
+                    src_token_idx < len(tokens)-1:
                 src_token_idx += 1
                 src_token = tokens[src_token_idx]
 
@@ -174,9 +176,10 @@ class SyntaxRules():
 
     def match(self, tokens, pos=0):
         for rule_name in self.all_rules:
-            rule_match = self.rule_match(self.all_rules[rule_name], tokens, pos)
-            if rule_match is not None:
-                return (rule_name, rule_match)
+            if self.all_rules[rule_name]["root_check"] == 1:
+                rule_match = self.rule_match(self.all_rules[rule_name], tokens, pos)
+                if rule_match is not None:
+                    return (rule_name, rule_match)
         return (None, None)
 
             #print ("tpl_index: ",tpl_index)

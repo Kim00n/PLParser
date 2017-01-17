@@ -245,6 +245,4 @@ class RuleScanner():
             token_el["min_occ"] = split_token[0]
             token_el["max_occ"] = split_token[1] if 1 in split_token else split_token[0]
 
-        print("tk el: ", token_el)
-
         return token_el

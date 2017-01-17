@@ -17,7 +17,7 @@ class Parser():
 
     def __load_syntax_rules__(self,json_conf):
         for rule in json_conf['syntaxRules']:
-            self.__syntax_rules__.add_rule_from_pattern(rule['name'], rule['pattern'], rule['ignore'] if 'ignore' in rule else None)
+            self.__syntax_rules__.add_rule_from_pattern(rule['name'], rule['pattern'], rule['ignore'] if 'ignore' in rule else None, rule['root_check'])
             print("Loaded Rule: ", rule['name'])
 
     def load_config(self, filename):

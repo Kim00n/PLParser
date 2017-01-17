@@ -36,27 +36,53 @@
     {
       "name": "package_declaration",
       "pattern": "create or replace package body (@package_name .id) (is|as)",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 1
     },{
       "name": "type_declaration",
       "pattern": "type (@type_name .id) is (<type_decl_record>|<type_decl_table>) ';'",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 1
     },{
       "name": "type_decl_record",
       "pattern": "record '(' .id .id ')'",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 0
     },{
       "name": "type_decl_table",
       "pattern": "table of .id (index by .id)",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 0
     },{
       "name": "cursor_declaration",
       "pattern": "cursor (@cursor_name .id) '(' !')'* ')' is",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 1
     },{
       "name": "variable_declaration",
       "pattern": "(@variable_name .id) (@variable_type .id) ';'",
-      "ignore":".blk"
+      "ignore":".blk",
+      "root_check": 1
+    },{
+      "name": "function_spec",
+      "pattern": "function .id <param_list>? return .id ';'",
+      "ignore":".blk",
+      "root_check": 1
+    },{
+      "name": "procedure_spec",
+      "pattern": "procedure .id <param_list>? return .id ';'",
+      "ignore":".blk",
+      "root_check": 1
+    },{
+      "name": "param",
+      "pattern": "(@param_name .id) (@param_type .id) ','?",
+      "ignore":".blk",
+      "root_check": 0
+    },{
+      "name": "param_list",
+      "pattern": "'(' <param>* ')'",
+      "ignore":".blk",
+      "root_check": 0
     }
   ]
 }
