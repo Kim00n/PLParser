@@ -39,7 +39,15 @@
       "ignore":".blk"
     },{
       "name": "type_declaration",
-      "pattern": "type (@type_name .id) is (@type_spec !';'*) ';'",
+      "pattern": "type (@type_name .id) is (<type_decl_record>|<type_decl_table>) ';'",
+      "ignore":".blk"
+    },{
+      "name": "type_decl_record",
+      "pattern": "record '(' .id .id ')'",
+      "ignore":".blk"
+    },{
+      "name": "type_decl_table",
+      "pattern": "table of .id (index by .id)",
       "ignore":".blk"
     },{
       "name": "cursor_declaration",
@@ -47,7 +55,7 @@
       "ignore":".blk"
     },{
       "name": "variable_declaration",
-      "pattern": "(@variable_name .id) (@variable_type !';'.id) ';'",
+      "pattern": "(@variable_name .id) (@variable_type .id) ';'",
       "ignore":".blk"
     }
   ]

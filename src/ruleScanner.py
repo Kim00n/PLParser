@@ -98,27 +98,27 @@ class RuleScanner():
             token_el = self.match_token(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                current_token_rules.append(('token',token_el))
+                current_token_rules.append(('single_token',token_el))
                 continue
 
             # Search for group
             token_el = self.match_grp(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                current_token_rules.append(('group',token_el))
+                current_token_rules.append(('group_tokens',token_el))
                 continue
 
             # Search for group identifier
             token_el = self.match_id(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                current_token_rules.append(('group_id',token_el))
+                current_token_rules.append(('id',token_el))
                 continue
 
             token_el = self.match_rule_name(pattern, pos, strip=None)
             if token_el is not None:
                 pos += len(token_el)
-                current_token_rules.append(('rule',token_el))
+                current_token_rules.append(('rule_call',token_el))
                 continue
 
             token_el = pattern[pos]
@@ -215,7 +215,7 @@ class RuleScanner():
 
     def str_split_rule_name(self,pattern):
         token_el = {
-            "rule":'',
+            "rule_name":'',
             "min_occ":'',
             "max_occ":''
         }
@@ -224,12 +224,13 @@ class RuleScanner():
 
         rule_name = self.match_id(strip_pattern, pos)
         if rule_name is not None:
-            token_el["rule"] = rule_name
+            token_el["rule_name"] = rule_name
             pos += len(rule_name)+1
 
         token_occ = self.match_part_occ(strip_pattern, pos)
         if token_occ is None:
             token_occ = '[1]'
+
         if token_occ == '*':
             token_el["min_occ"] = 0
             token_el["max_occ"] = -1     # mean not defined
@@ -243,5 +244,7 @@ class RuleScanner():
             split_token = token_occ[1:-1].split(',')
             token_el["min_occ"] = split_token[0]
             token_el["max_occ"] = split_token[1] if 1 in split_token else split_token[0]
+
+        print("tk el: ", token_el)
 
         return token_el
